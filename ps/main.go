@@ -78,12 +78,11 @@ func main() {
 			pinfo.parseStatus(p.Pid)
 		}
 	}
-	// u, _ := user.Current()
 	table := tablewriter.NewWriter(os.Stdout)
 	for _, proc := range pinfo.Processmap {
-		table.Append([]string{proc.Pid, proc.Tty, "", proc.Name})
+		table.Append([]string{proc.Pid, proc.Ppid, proc.Tty, "", proc.Name})
 	}
-	table.SetHeader([]string{"PID", "TTY", "TIME", "CMD"})
+	table.SetHeader([]string{"PID", "PPID", "TTY", "TIME", "CMD"})
 	table.SetAutoWrapText(false)
 	table.SetAutoFormatHeaders(true)
 	table.SetCenterSeparator("")
@@ -91,8 +90,6 @@ func main() {
 	table.SetRowSeparator("")
 	table.SetHeaderLine(false)
 	table.SetBorder(false)
-	table.SetTablePadding("\t") // pad with tabs
-	table.SetNoWhiteSpace(true)
 	table.Render()
 }
 
@@ -121,7 +118,12 @@ func (pinfo *processinfo) parseStat(pid string) error {
 	p.Ppid = values[3]
 	p.State = values[2]
 	devNumber, _ := strconv.Atoi(values[6])
+
 	p.Tty = pinfo.Ttymap[uint(devNumber)]
+	if p.Tty == "" {
+		p.Tty = "?"
+	}
+
 	pinfo.Processmap[pid] = p
 
 	return nil
@@ -218,8 +220,6 @@ func mapTTY() map[uint]string {
 				if ok {
 					ttymap[uint(sys.Rdev)] = "pts/" + file.Name()
 				}
-				fmt.Println(file.Name())
-				fmt.Println(path)
 			}
 		}
 		return nil
