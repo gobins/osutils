@@ -224,7 +224,6 @@ func mapTTY() map[uint]string {
 		}
 		return nil
 	})
-
 	if err != nil {
 		fmt.Println(err)
 	}
